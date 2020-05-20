@@ -2,9 +2,12 @@ package jobshop.solvers;
 
 import jobshop.Instance;
 import jobshop.Result;
+import jobshop.Schedule;
 import jobshop.Solver;
 import jobshop.encodings.ResourceOrder;
+import jobshop.encodings.Task;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class DescentSolver implements Solver {
@@ -67,24 +70,135 @@ public class DescentSolver implements Solver {
 
         /** Apply this swap on the given resource order, transforming it into a new solution. */
         public void applyOn(ResourceOrder order) {
-            throw new UnsupportedOperationException();
+            Task swap = order.tasksByMachine[machine][t1];
+            order.tasksByMachine[machine][t1] = order.tasksByMachine[machine][t2];
+            order.tasksByMachine[machine][t2] = swap;
         }
     }
 
-
     @Override
     public Result solve(Instance instance, long deadline) {
-        throw new UnsupportedOperationException();
+
+        deadline = deadline + System.currentTimeMillis();
+        GreedySolver greedySolver = new GreedySolver(GreedySolver.Priority.EST_LRPT);
+
+        Result r = greedySolver.solve(instance, deadline);
+
+        ResourceOrder rso = new ResourceOrder(r.schedule);
+
+        ResourceOrder optimalRso = rso.copy();
+        int optimalMakespan = optimalRso.toSchedule().makespan();
+
+        boolean newVoisin = true;
+
+        while (newVoisin && (deadline - System.currentTimeMillis() > 1)) {
+
+            newVoisin=false;
+
+            ResourceOrder temp = optimalRso.copy();
+
+            List<Swap> alSwap = new ArrayList<>();
+            List<Block> alBlock = this.blocksOfCriticalPath(temp);
+            for (Block block : alBlock) {
+                alSwap.addAll(this.neighbors(block));
+            }
+
+            for (Swap swap : alSwap) {
+
+                ResourceOrder current = temp.copy();
+
+                swap.applyOn(current);
+                Schedule newSch = current.toSchedule();
+
+                if (newSch != null) {
+                    int makespanCurrent = newSch.makespan();
+                    if (optimalMakespan > makespanCurrent) {
+                        optimalRso = current;
+                        optimalMakespan = makespanCurrent;
+                        newVoisin = true;
+                    }
+                }
+            }
+        }
+        return new Result(instance, optimalRso.toSchedule(), Result.ExitCause.Blocked);
     }
 
-    /** Returns a list of all blocks of the critical path. */
+    int indexTaskOnMachine(ResourceOrder rso, int machine, Task taskObj) {
+
+        int indexTask = -1;
+
+        for (int i = 0; i < rso.instance.numJobs; i++) {
+            if (rso.tasksByMachine[machine][i].equals(taskObj)) {
+                indexTask = i;
+            }
+        }
+        return indexTask;
+    }
+
+    /**
+     * Returns a list of all blocks of the critical path.
+     */
     List<Block> blocksOfCriticalPath(ResourceOrder order) {
-        throw new UnsupportedOperationException();
+
+        Schedule schedule = order.toSchedule();
+
+        List<Task> listTask = schedule.criticalPath();
+
+        int indexDebut = -1;
+        int indexFin;
+        int currentMachine = -1;
+
+        ArrayList<Block> alBlock = new ArrayList<>();
+
+        for (int j = 0; j < listTask.size() - 1; j++) {
+            int task = listTask.get(j).task;
+            int job = listTask.get(j).job;
+            int machine = order.instance.machine(job, task);
+            int indexTask = indexTaskOnMachine(order, machine, listTask.get(j));
+
+            if (currentMachine == -1 || currentMachine != machine) {
+                currentMachine = machine;
+                indexDebut = indexTask;
+            }
+
+            int nextTask = listTask.get(j + 1).task;
+            int nextJob = listTask.get(j + 1).job;
+            int nextMachine = order.instance.machine(nextJob, nextTask);
+            int nextIndexTask = indexTaskOnMachine(order, nextMachine, listTask.get(j + 1));
+
+            if (nextMachine != machine) {
+                indexFin = indexTask;
+                if (indexDebut != indexFin) {
+                    alBlock.add(new Block(machine, indexDebut, indexFin));
+                }
+            } else if (j == listTask.size() - 2) {
+                indexFin = nextIndexTask;
+                if (indexDebut != indexFin) {
+                    alBlock.add(new Block(machine, indexDebut, indexFin));
+                }
+            }
+        }
+        return alBlock;
     }
 
-    /** For a given block, return the possible swaps for the Nowicki and Smutnicki neighborhood */
+    /**
+     * For a given block, return the possible swaps for the Nowicki and Smutnicki neighborhood
+     */
     List<Swap> neighbors(Block block) {
-        throw new UnsupportedOperationException();
+
+        int machine = block.machine;
+        int firstTask = block.firstTask;
+        int lastTask = block.lastTask;
+
+        ArrayList<Swap> alSwap = new ArrayList<>();
+
+        if(lastTask-firstTask == 1){
+            alSwap.add(new Swap(machine,lastTask,firstTask));
+        }else{
+            alSwap.add(new Swap(machine,firstTask,firstTask+1));
+            alSwap.add(new Swap(machine,lastTask-1,lastTask));
+        }
+        return alSwap;
     }
 
 }

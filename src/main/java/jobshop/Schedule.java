@@ -132,4 +132,14 @@ public class Schedule {
         assert isCriticalPath(path);
         return path;
     }
+    public String toString() {
+        String ret = "";
+        for(int i=0; i<times.length; i++) {
+            for (int j = 0; j < times[i].length; j++) {
+                ret += "tache "+ j +" : "+times[i][j]+" ";
+            }
+            ret += "\n";
+        }
+        return ret;
+    }
 }

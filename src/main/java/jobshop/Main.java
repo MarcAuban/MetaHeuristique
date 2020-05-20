@@ -24,7 +24,15 @@ public class Main {
         solvers = new HashMap<>();
         solvers.put("basic", new BasicSolver());
         solvers.put("random", new RandomSolver());
-        // add new solvers here
+        solvers.put("spt",  new GreedySolver(GreedySolver.Priority.SPT));
+        solvers.put("lrpt",  new GreedySolver(GreedySolver.Priority.LRPT));
+        solvers.put("estspt",  new GreedySolver(GreedySolver.Priority.EST_SPT));
+        solvers.put("estlrpt",  new GreedySolver(GreedySolver.Priority.EST_LRPT));
+        solvers.put("descent", new DescentSolver());
+        solvers.put("taboo1", new TabooSolver(5, 1000));
+        solvers.put("taboo2", new TabooSolver(5, 10000));
+        solvers.put("taboo3", new TabooSolver(10, 1000));
+        solvers.put("taboo4", new TabooSolver(10, 10000));
     }
 
 
