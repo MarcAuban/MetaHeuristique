@@ -32,21 +32,10 @@ public class GreedySolver implements Solver {
         int[] tasksPerJob = new int[instance.numMachines];
 
         int[] bestTimeJob = new int[instance.numJobs]; //EST
-        for (int i=0; i<instance.numJobs; i++) {
-            bestTimeJob[i] = 0;
-        }
 
         int[] bestTimeMachine = new int[instance.numMachines]; //EST
-        for (int i=0; i<instance.numMachines; i++) {
-            bestTimeMachine[i] = 0;
-        }
-
-        for (int i=0; i<instance.numMachines; i++) {
-            tasksPerJob[i] = 0;
-        }
 
         for (int i=0; i<instance.numJobs; i++) { //LRPT
-            remainingTime[i] = 0;
             for(int j=0; j< instance.numTasks; j++){
                 remainingTime[i]+=instance.duration(i,j);
             }
