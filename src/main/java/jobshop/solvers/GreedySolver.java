@@ -139,13 +139,16 @@ public class GreedySolver implements Solver {
     public int getMaxJobMachine(Task task, Instance instance, int[] bestTimeMachine, int[] bestTimeJob) {
         return Math.max(bestTimeJob[task.job], bestTimeMachine[instance.machine(task)]);
     }
+    public int getMinJobMachine(Task task, Instance instance, int[] bestTimeMachine, int[] bestTimeJob) {
+        return Math.min(bestTimeJob[task.job], bestTimeMachine[instance.machine(task)]);
+    }
 
     public Task EST_SPT(ArrayList<Task> doable, Instance instance, int[] bestTimeJob, int[] bestTimeMachine) {
         int min = Integer.MAX_VALUE;
         int EST;
         Task ret = null;
         for (Task curTask : doable) {
-            EST = getMaxJobMachine(curTask, instance, bestTimeMachine, bestTimeJob);
+            EST = getMinJobMachine(curTask, instance, bestTimeMachine, bestTimeJob);
             if (min > EST) {
                 min = EST;
                 ret = curTask;
