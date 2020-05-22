@@ -97,13 +97,13 @@ public class DescentSolver implements Solver {
 
             ResourceOrder temp = optimalRso.copy();
 
-            List<Swap> alSwap = new ArrayList<>();
+            List<Swap> swapList = new ArrayList<>();
             List<Block> alBlock = this.blocksOfCriticalPath(temp);
             for (Block block : alBlock) {
-                alSwap.addAll(this.neighbors(block));
+                swapList.addAll(this.neighbors(block));
             }
 
-            for (Swap swap : alSwap) {
+            for (Swap swap : swapList) {
 
                 ResourceOrder current = temp.copy();
 
@@ -148,7 +148,7 @@ public class DescentSolver implements Solver {
         int indexFin;
         int currentMachine = -1;
 
-        ArrayList<Block> alBlock = new ArrayList<>();
+        ArrayList<Block> blockList = new ArrayList<>();
 
         for (int j = 0; j < listTask.size() - 1; j++) {
             int task = listTask.get(j).task;
@@ -169,16 +169,16 @@ public class DescentSolver implements Solver {
             if (nextMachine != machine) {
                 indexFin = indexTask;
                 if (indexDebut != indexFin) {
-                    alBlock.add(new Block(machine, indexDebut, indexFin));
+                    blockList.add(new Block(machine, indexDebut, indexFin));
                 }
             } else if (j == listTask.size() - 2) {
                 indexFin = nextIndexTask;
                 if (indexDebut != indexFin) {
-                    alBlock.add(new Block(machine, indexDebut, indexFin));
+                    blockList.add(new Block(machine, indexDebut, indexFin));
                 }
             }
         }
-        return alBlock;
+        return blockList;
     }
 
     /**
